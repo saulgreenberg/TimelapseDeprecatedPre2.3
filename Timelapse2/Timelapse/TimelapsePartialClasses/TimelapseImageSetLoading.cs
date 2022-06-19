@@ -434,6 +434,9 @@ namespace Timelapse
             // Set whether detections actually exist at this point.
             GlobalReferences.DetectionsExists = this.State.UseDetections && this.DataHandler.FileDatabase.DetectionsExists();
 
+            // Sets the default bounding box threshold, either by using a default or reading it from the detection database table (if it exists)
+            this.State.BoundingBoxDisplayThresholdResetToValueInDataBase();
+
             // Get the QuickPasteXML from the database and populate the QuickPaste datastructure with it
             string xml = this.DataHandler.FileDatabase.ImageSet.QuickPasteXML;
             this.quickPasteEntries = QuickPasteOperations.QuickPasteEntriesFromXML(this.DataHandler.FileDatabase, xml);

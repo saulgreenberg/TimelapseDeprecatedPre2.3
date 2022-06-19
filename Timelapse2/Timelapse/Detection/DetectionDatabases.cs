@@ -40,9 +40,13 @@ namespace Timelapse.Detection
             {
                 new SchemaColumnDefinition(Constant.InfoColumns.InfoID, Timelapse.Sql.IntegerType + Timelapse.Sql.PrimaryKey), // Primary Key
                 new SchemaColumnDefinition(Constant.InfoColumns.Detector,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.InfoColumns.DetectorVersion,  Sql.StringType, Constant.DetectionValues.MDVersionUnknown),
                 new SchemaColumnDefinition(Constant.InfoColumns.DetectionCompletionTime,  Sql.StringType),
                 new SchemaColumnDefinition(Constant.InfoColumns.Classifier,  Sql.StringType),
-                new SchemaColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.StringType)
+                new SchemaColumnDefinition(Constant.InfoColumns.ClassificationCompletionTime,  Sql.StringType),
+                new SchemaColumnDefinition(Constant.InfoColumns.TypicalDetectionThreshold, Sql.Real, Constant.DetectionValues.DefaultTypicalDetectionThresholdIfUnknown),
+                new SchemaColumnDefinition(Constant.InfoColumns.ConservativeDetectionThreshold, Sql.Real, Constant.DetectionValues.DefaultConservativeDetectionThresholdIfUnknown),
+                new SchemaColumnDefinition(Constant.InfoColumns.TypicalClassificationThreshold, Sql.Real, Constant.DetectionValues.DefaultTypicalClassificationThresholdIfUnknown)
             };
             database.CreateTable(Constant.DBTables.Info, columnDefinitions);
 
@@ -126,7 +130,11 @@ namespace Timelapse.Detection
                 new ColumnTuple(Constant.InfoColumns.Detector, detector.info.detector),
                 new ColumnTuple(Constant.InfoColumns.DetectionCompletionTime, detector.info.detection_completion_time),
                 new ColumnTuple(Constant.InfoColumns.Classifier, detector.info.classifier),
-                new ColumnTuple(Constant.InfoColumns.ClassificationCompletionTime, detector.info.classification_completion_time)
+                new ColumnTuple(Constant.InfoColumns.ClassificationCompletionTime, detector.info.classification_completion_time),
+                new ColumnTuple(Constant.InfoColumns.DetectorVersion, detector.info.detector_metadata.megadetector_version),
+                new ColumnTuple(Constant.InfoColumns.TypicalDetectionThreshold, (float) detector.info.detector_metadata.typical_detection_threshold),
+                new ColumnTuple(Constant.InfoColumns.ConservativeDetectionThreshold, (float) detector.info.detector_metadata.conservative_detection_threshold),
+                new ColumnTuple(Constant.InfoColumns.TypicalClassificationThreshold, (float) detector.info.classifier_metadata.typical_classification_threshold),
             };
             List<List<ColumnTuple>> insertionStatements = new List<List<ColumnTuple>>
             {

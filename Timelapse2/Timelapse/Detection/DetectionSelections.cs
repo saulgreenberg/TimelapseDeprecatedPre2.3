@@ -1,5 +1,6 @@
 ﻿using System;
 using Timelapse.Enums;
+using Timelapse.Util;
 
 namespace Timelapse.Detection
 {
@@ -21,7 +22,7 @@ namespace Timelapse.Detection
         public bool UseRecognition { get; set; }
 
         // Detection type: Empty (Recognized images with no Detections / Classifications 
-        public bool EmptyDetections { get; set; }
+        public bool InterpretAllDetectionsAsEmpty { get; set; }
 
         // Detection type: All (Recognized images with at least one Detection / Classification
         public bool AllDetections { get; set; }
@@ -38,7 +39,16 @@ namespace Timelapse.Detection
         public string ClassificationCategory { get; set; }
 
         // The Confidence thresholds, used by the select user interface
-        public double ConfidenceThreshold1ForUI { get; set; }
+        public double ConfidenceThreshold1ForUI { 
+            get
+            {
+                return this.CurrentDetectionThreshold; 
+            }
+            set
+            {
+                this.CurrentDetectionThreshold = value;
+            }
+        }
         public double ConfidenceThreshold2ForUI { get; set; }
 
         // Transforms the confidence threshold as needed, depending on the select operation
@@ -49,13 +59,13 @@ namespace Timelapse.Detection
                 const double justAboveZero = 0.00001;
                 double lowerBound;
                 double upperBound;
-                if (this.EmptyDetections)
+                if (this.InterpretAllDetectionsAsEmpty)
                 {
                     // For Empty category, we want to invert the confidence 
                     // e.g confidence of 1 is returned as confidence of 0
                     // But note that we actually return the confidence of the different threshold in this case, as normally #1 <= #2
                     // Doing so keeps that relationship after the inversion is done.
-                    // We also swap the lower/uppder bound to keep one less than the other
+                    // We also swap the lower/upper bound to keep one less than the other
                     // If Threshold2 is .99 in the UI for empty items, we invert that, but to just above 0
                     // so we capture all the non-zero items (i.e., all images with detections in that range) as otherwise it could
                     //  omit the rare image with a max detection between 0 and .01
@@ -80,22 +90,82 @@ namespace Timelapse.Detection
         }
         #endregion
 
+        private double TypicalDetectionThreshold
+        {
+            get
+            {
+                return GlobalReferences.MainWindow?.DataHandler?.FileDatabase == null
+                    ? Constant.DetectionValues.DefaultTypicalDetectionThresholdIfUnknown
+                    : (double)GlobalReferences.MainWindow?.DataHandler?.FileDatabase.GetTypicalDetectionThreshold();
+            }
+        }
+
+        private double _currentDetectionThreshold = -1;
+        public double CurrentDetectionThreshold
+        {
+            set
+            {
+                this._currentDetectionThreshold = value;
+            }
+            get
+            {
+                return this._currentDetectionThreshold < 0
+                    ? this.TypicalDetectionThreshold
+                    : this._currentDetectionThreshold;
+            }
+        }
+
+        private double TypicalClassificationThreshold
+        {
+            get
+            {
+                return GlobalReferences.MainWindow?.DataHandler?.FileDatabase == null
+                    ? Constant.DetectionValues.DefaultTypicalClassificationThresholdIfUnknown
+                    : (double)GlobalReferences.MainWindow?.DataHandler?.FileDatabase.GetTypicalClassificationThreshold();
+            }
+        }
+
+        private double _currentClassificationThreshold = -1;
+        public double CurrentClassificationThreshold
+        {
+            set
+            {
+                this._currentClassificationThreshold = value;
+            }
+            get
+            {
+                return this._currentClassificationThreshold < 0
+                    ? this.TypicalClassificationThreshold
+                    : this._currentClassificationThreshold;
+            }
+        }
+
+        public double ConservativeDetectionThreshold
+        {
+            get
+            {
+                return GlobalReferences.MainWindow?.DataHandler?.FileDatabase == null
+                    ? Constant.DetectionValues.DefaultConservativeDetectionThresholdIfUnknown
+                    : (double)GlobalReferences.MainWindow?.DataHandler?.FileDatabase.GetConservativeDetectionThreshold();
+            }
+        }
+
         #region Constructor - Initializes various defaults
         public DetectionSelections()
         {
             this.ClearAllDetectionsUses();
 
             // We don't know the recognition type yet
-            this.RecognitionType = RecognitionType.None;
+            this.RecognitionType = RecognitionType.Empty;
 
-            // Set default: 0.8 - 1 seems like a reasonable starting confidence
             this.DetectionCategory = "1";
-            this.ConfidenceThreshold1ForUI = 0.8;
+            // No longer need this here, as its kept in TimelapseState
+            // this.ConfidenceThreshold1ForUI = Util.GlobalReferences.TimelapseState.CurrentDetectionThreshold; //0.8;
             this.ConfidenceThreshold2ForUI = 1;
 
             this.ClassificationCategory = "1";
 
-            this.EmptyDetections = false;
+            this.InterpretAllDetectionsAsEmpty = false;
             this.RankByConfidence = false;
         }
         #endregion

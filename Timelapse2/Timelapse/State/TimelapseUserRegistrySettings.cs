@@ -14,7 +14,6 @@ namespace Timelapse.Util
         public bool AudioFeedback { get; set; }
         public Point BookmarkScale { get; set; }
         public Point BookmarkTranslation { get; set; }
-        public Double BoundingBoxDisplayThreshold { get; set; }
         public bool BoundingBoxAnnotate { get; set; }
         public bool BoundingBoxColorBlindFriendlyColors { get; set; }
         public CustomSelectionOperatorEnum CustomSelectionTermCombiningOperator { get; set; }
@@ -82,7 +81,6 @@ namespace Timelapse.Util
                 this.AudioFeedback = registryKey.GetBoolean(Constant.WindowRegistryKeys.AudioFeedback, false);
                 this.BookmarkScale = new Point(registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkScaleX, 1.0), registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkScaleY, 1.0));
                 this.BookmarkTranslation = new Point(registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkTranslationX, 1.0), registryKey.GetDouble(Constant.WindowRegistryKeys.BookmarkTranslationY, 1.0));
-                this.BoundingBoxDisplayThreshold = registryKey.GetDouble(Constant.WindowRegistryKeys.BoundingBoxDisplayThreshold, Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault);
                 this.BoundingBoxAnnotate = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxAnnotate, false);
                 this.BoundingBoxColorBlindFriendlyColors = registryKey.GetBoolean(Constant.WindowRegistryKeys.BoundingBoxColorBlindFriendlyColors, false);
                 this.CSVDateTimeOptions = registryKey.GetEnum<CSVDateTimeOptionsEnum>(Constant.WindowRegistryKeys.CSVDateTimeOptions, CSVDateTimeOptionsEnum.DateTimeWithoutTSeparatorColumn);
@@ -196,7 +194,6 @@ namespace Timelapse.Util
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkScaleY, this.BookmarkScale.Y);
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkTranslationX, this.BookmarkTranslation.X);
                 registryKey.Write(Constant.WindowRegistryKeys.BookmarkTranslationY, this.BookmarkTranslation.Y);
-                registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxDisplayThreshold, this.BoundingBoxDisplayThreshold);
                 registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxAnnotate, this.BoundingBoxAnnotate);
                 registryKey.Write(Constant.WindowRegistryKeys.BoundingBoxColorBlindFriendlyColors, this.BoundingBoxColorBlindFriendlyColors);
                 registryKey.Write(Constant.WindowRegistryKeys.CSVDateTimeOptions, this.CSVDateTimeOptions.ToString());

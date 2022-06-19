@@ -15,7 +15,6 @@ namespace Timelapse
         /// </summary>
         private void CloseImageSet()
         {
-
             // if we are actually viewing any files, reset the items below
             if (this.IsFileDatabaseAvailable())
             {
@@ -39,7 +38,12 @@ namespace Timelapse
             }
 
             // As we are starting afresh, no detections should now exists.
+            // As well, we want to reset the current detection threshold to a value that indicates it is undefined.
             GlobalReferences.DetectionsExists = false;
+            if (this.DataHandler?.FileDatabase?.CustomSelection?.DetectionSelections != null)
+            {
+                this.DataHandler.FileDatabase.CustomSelection.DetectionSelections.CurrentDetectionThreshold = -1; // this forces it to use the default in the new JSON
+            }
 
             // Clear the data grid
             this.DataGrid.ItemsSource = null;

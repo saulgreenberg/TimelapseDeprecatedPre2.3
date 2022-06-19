@@ -12,13 +12,15 @@ namespace Timelapse.Dialog
         #region Private Variables
         private readonly MarkableCanvas markableCanvas;
         private readonly TimelapseState timelapseState;
+        private readonly bool isFileDatabaseAvailable;
         #endregion
 
         #region Constructor and Loaded
-        public AdvancedTimelapseOptions(TimelapseState timelapseState, MarkableCanvas markableCanvas, Window owner)
+        public AdvancedTimelapseOptions(TimelapseState timelapseState, MarkableCanvas markableCanvas, Window owner, bool isFileDatabaseAvailable)
         {
             this.InitializeComponent();
             this.Owner = owner;
+            this.isFileDatabaseAvailable = isFileDatabaseAvailable;
 
             // Check the arguments for null 
             ThrowIf.IsNullArgument(timelapseState, nameof(timelapseState));
@@ -84,9 +86,11 @@ namespace Timelapse.Dialog
             this.DifferenceThreshold.Minimum = Constant.ImageValues.DifferenceThresholdMin;
 
             // Detections
+            
             this.CheckBoxUseDetections.IsChecked = true;
             this.CheckBoxBoundingBoxAnnotate.IsChecked = this.timelapseState.BoundingBoxAnnotate;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = this.timelapseState.BoundingBoxColorBlindFriendlyColors;
+            this.AutomatedImageRecognitionPanel.IsEnabled = this.isFileDatabaseAvailable;
         }
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
@@ -274,7 +278,8 @@ namespace Timelapse.Dialog
             this.CheckBoxBoundingBoxAnnotate.IsChecked = true;
             this.CheckBoxBoundingBoxColorBlindFriendlyColors.IsChecked = false;
             this.BoundingBoxDisplayThresholdSlider.IsEnabled = true;
-            this.BoundingBoxDisplayThresholdSlider.Value = Constant.MarkableCanvas.BoundingBoxDisplayThresholdDefault;
+            this.timelapseState.BoundingBoxDisplayThresholdResetToDefault();
+            this.BoundingBoxDisplayThresholdSlider.Value = this.timelapseState.BoundingBoxDisplayThreshold;
         }
 
         private void BoundingBoxDisplayThreshold_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -333,6 +338,7 @@ namespace Timelapse.Dialog
         }
 
         #endregion
+
         #region Callbacks - Maxium zoom
         // Callback: The user has changed the maximum zoom value
         private void MaxZoom_ValueChanged(object sender, RoutedPropertyChangedEventArgs<double> e)
@@ -349,6 +355,7 @@ namespace Timelapse.Dialog
             this.MaxZoom.ToolTip = this.markableCanvas.ZoomMaximum;
         }
         #endregion
+
 
         #region Callback - Dialog Buttons
 

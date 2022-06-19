@@ -158,7 +158,7 @@ namespace Timelapse.Dialog
 
                 // Set the combobox selection to the last used one.
                 string categoryLabel = String.Empty;
-                if (this.DetectionSelections.RecognitionType == RecognitionType.None)
+                if (this.DetectionSelections.RecognitionType == RecognitionType.Empty)
                 {
                     // If we don't know the recognition type, default to All
                     this.DetectionCategoryComboBox.SelectedValue = Constant.DetectionValues.AllDetectionLabel;
@@ -166,7 +166,7 @@ namespace Timelapse.Dialog
                 else if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
                 {
                     categoryLabel = this.database.GetDetectionLabelFromCategory(this.DetectionSelections.DetectionCategory);
-                    if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory) || this.DetectionSelections.AllDetections)
+                    if (string.IsNullOrEmpty(this.DetectionSelections.DetectionCategory) || (this.DetectionSelections.AllDetections && !this.DetectionSelections.InterpretAllDetectionsAsEmpty))
                     {
                         // We need an 'All' detection category, which is the union of all categories (except empty).
                         // Because All is a bogus detection category (since its not part of the detection data), we have to set it explicitly
@@ -375,7 +375,7 @@ namespace Timelapse.Dialog
                     TimeSpan offset = currentImageRow.UtcOffset;
                     DateTimeOffset dateTime = this.database.CustomSelection.GetDateTime(gridRowIndex - 1, offset);
 
-                    dateTime = new DateTimeOffset( (dateTime + dateTime.Offset).Ticks, TimeSpan.Zero);
+                    dateTime = new DateTimeOffset((dateTime + dateTime.Offset).Ticks, TimeSpan.Zero);
                     // The DateTime Picker is set to show only the date portion 
                     DateTimePicker dateValue = new DateTimePicker()
                     {
@@ -941,6 +941,18 @@ namespace Timelapse.Dialog
 
         private void SetDetectionCriteria()
         {
+            SetDetectionCriteria(false);
+        }
+    
+        private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
+        {
+            this.database.CustomSelection.ShowMissingDetections = (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
+            this.SetDetectionCriteria();
+            this.InitiateShowCountsOfMatchingFiles();
+        }
+
+        private void SetDetectionCriteria(bool resetSlidersIfNeeded)
+        {
             if (this.IsLoaded == false || this.dontInvoke)
             {
                 return;
@@ -948,28 +960,21 @@ namespace Timelapse.Dialog
             this.DetectionSelections.UseRecognition = this.UseDetectionsCheckbox.IsChecked == true;
             if (this.DetectionSelections.UseRecognition)
             {
-                this.SetDetectionCriteriaForComboBox(false);
+                this.SetDetectionCriteriaForComboBox(resetSlidersIfNeeded);
                 this.DetectionSelections.ConfidenceThreshold1ForUI = this.DetectionConfidenceSpinnerLower.Value == null ? 0 : Round2(this.DetectionConfidenceSpinnerLower.Value);
                 this.DetectionSelections.ConfidenceThreshold2ForUI = this.DetectionConfidenceSpinnerHigher.Value == null ? 0 : Round2(this.DetectionConfidenceSpinnerHigher.Value);
-
-                // The BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
-                // determined in this select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
-                // show bounding boxes when the confidence is .4 or more. 
-                Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
-                Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseRecognition
-                    ? confidenceBounds.Item1
-                    : 1;
             }
 
+            // The BoundingBoxDisplayThreshold is the user-defined default set in preferences, while the BoundingBoxThresholdOveride is the threshold
+            // determined in this select dialog. For example, if (say) the preference setting is .6 but the selection is at .4 confidence, then we should 
+            // show bounding boxes when the confidence is .4 or more. 
+            Tuple<double, double> confidenceBounds = this.DetectionSelections.ConfidenceThresholdForSelect;
+            Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride = this.DetectionSelections.UseRecognition // && this.DetectionSelections.RecognitionType != RecognitionType.Classification
+                ? confidenceBounds.Item1
+                : 1;
+            // System.Diagnostics.Debug.Print(Util.GlobalReferences.TimelapseState.BoundingBoxThresholdOveride.ToString());
             // Enable / alter looks and behavour of detecion UI to match whether detections should be used
             this.EnableDetectionControls((bool)this.UseDetectionsCheckbox.IsChecked);
-        }
-
-        private void ShowMissingDetectionsCheckbox_CheckedChanged(object sender, RoutedEventArgs e)
-        {
-            this.database.CustomSelection.ShowMissingDetections = (bool)this.ShowMissingDetectionsCheckbox.IsChecked;
-            this.SetDetectionCriteria();
-            this.InitiateShowCountsOfMatchingFiles();
         }
 
         private void DetectionCategoryComboBox_SelectionChanged(object sender, System.Windows.Controls.SelectionChangedEventArgs e)
@@ -978,77 +983,113 @@ namespace Timelapse.Dialog
             {
                 return;
             }
-            this.SetDetectionCriteriaForComboBox(true);
-            // this.SetDetectionCriteria();
+            // Invoke this with a true argument, which forces the confidence values to be reset based upon the selection
+            this.SetDetectionCriteria(true);
             this.InitiateShowCountsOfMatchingFiles();
         }
 
         private void SetDetectionCriteriaForComboBox(bool resetSlidersIfNeeded)
         {
-            // Reset defaults to reasonable settings whenever the selected item changes
+            this.ignoreSpinnerUpdates = true; // as otherwise resetting sliders/spinners will reinvoke this
+            
+            // Set various flags and values depending on what was selected in the combo box
+            if (resetSlidersIfNeeded)
+            {
+                // These reset settings universally apply regardless of the recognition type
+                // The higher limit is always 1.0. Resetting the lower limit to its undefined state signals that default values should be looked up and used.
+                this.DetectionRangeSlider.HigherValue = 1.0;
+                this.DetectionSelections.CurrentDetectionThreshold = Constant.DetectionValues.Undefined; // As its a new JSON, resetting sets it back to detections, so we can use the default value.
+                this.DetectionSelections.CurrentClassificationThreshold = Constant.DetectionValues.Undefined; // As its a new JSON, resetting sets it back to detections, so we can use the default value.
+            }
+
             if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.NoDetectionLabel)
             {
-                // If its empty, we want to default to 1.0, i.e.,to only show images where the recognizer has not found any detections.
-                // We also want to set EmptyDetections to false so that the actual selection can invert the confidence settings.
-                this.DetectionSelections.EmptyDetections = true;
-                this.DetectionSelections.AllDetections = false;
+                // EMPTY
+                // Note that Empties are special cases of an All Detection (which is why its recognition type is still a Detection and both AllDetections and EmptyDetections are true).
+                // What actually happens is that other code flips the confidence values in the query to 1 - the current higher and lowever slider settings (e.g., from 1-1 to 0-0). 
                 this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+                this.DetectionSelections.InterpretAllDetectionsAsEmpty = true;
+                this.DetectionSelections.AllDetections = true; // Empty detections signal that we need to flip the confidence to its inverse, which is then applied to AllDetections
                 this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel(Constant.DetectionValues.NoDetectionLabel);
 
                 if (resetSlidersIfNeeded)
                 {
+                    // Default is ConservativeDetection Threshold - 1.0, i.e.,to only show images where the recognizer has not found any detections.
+                    // As the EmptyDetections is true, other code will special case this by actually doing a query on 1 - these values
                     this.DetectionRangeSlider.HigherValue = 1.0;
-                    this.DetectionRangeSlider.LowerValue = 1.0;
+                    this.DetectionRangeSlider.LowerValue = 1 - this.DetectionSelections.ConservativeDetectionThreshold;
                 }
+
+                // Set the minium values for the slider and spinner, which is 0 fpr Empty detections
                 this.DetectionRangeSlider.Minimum = 0;
                 this.DetectionConfidenceSpinnerLower.Minimum = 0;
                 this.DetectionConfidenceSpinnerHigher.Minimum = 0;
             }
             else
             {
-                // Not empty: reset it to these defaults. We use .8 - 1.0, as this range is one where the recognizer is reasonably accurate
-                this.DetectionSelections.EmptyDetections = false;
-                if (resetSlidersIfNeeded)
-                {
-                    this.DetectionRangeSlider.HigherValue = 1.0;
-                    this.DetectionRangeSlider.LowerValue = 0.8;
+                // A non-empty selection
+                this.DetectionSelections.InterpretAllDetectionsAsEmpty = false;
 
-                }
-                // For a non-empty selection, enforce a minimum value of Constant.DetectionValues.MinimumDetectionValue (which is also feedback that it excludes images with tno bounding boxes)
+                // Set the minium values for the slider and spinner
+                // These are just a titch above 0, which means the results will only include items with a detection, but never include purely empty items (i.e., items with no detections)
                 this.DetectionRangeSlider.Minimum = Constant.DetectionValues.MinimumDetectionValue;
                 this.DetectionConfidenceSpinnerLower.Minimum = Constant.DetectionValues.MinimumDetectionValue;
                 this.DetectionConfidenceSpinnerHigher.Minimum = Constant.DetectionValues.MinimumDetectionValue;
+                
+                // Resetting the minimum doesn't necessarily change the value if its below the minimum
+                if (this.DetectionConfidenceSpinnerLower.Value == null || this.DetectionConfidenceSpinnerLower.Value < Constant.DetectionValues.MinimumDetectionValue)
+                {
+                    this.DetectionConfidenceSpinnerLower.Value = Constant.DetectionValues.MinimumDetectionValue;
+                }
+                if (this.DetectionConfidenceSpinnerHigher.Value == null || this.DetectionConfidenceSpinnerHigher.Value < Constant.DetectionValues.MinimumDetectionValue)
+                {
+                    this.DetectionConfidenceSpinnerHigher.Value = Constant.DetectionValues.MinimumDetectionValue;
+                }
+
+                //this.DetectionSelections.ConfidenceThreshold1ForUI = this.DetectionConfidenceSpinnerLower.Value == null  ? Constant.DetectionValues.MinimumDetectionValue : Round2(this.DetectionConfidenceSpinnerLower.Value);
+                //this.DetectionSelections.ConfidenceThreshold2ForUI = this.DetectionConfidenceSpinnerHigher.Value == null ? Constant.DetectionValues.MinimumDetectionValue : Round2(this.DetectionConfidenceSpinnerHigher.Value);
 
                 if ((string)this.DetectionCategoryComboBox.SelectedItem == Constant.DetectionValues.AllDetectionLabel)
                 {
-                    // Set a flag if all detections was selected
-                    this.DetectionSelections.AllDetections = true;
+                    // ALL (which is a detection)
                     this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+                    this.DetectionSelections.AllDetections = true;
+                    this.DetectionSelections.InterpretAllDetectionsAsEmpty = false;
+                    if (resetSlidersIfNeeded)
+                    {
+                        this.DetectionRangeSlider.LowerValue = this.DetectionSelections.CurrentDetectionThreshold;
+                    }
                 }
                 else
                 {
-                    this.DetectionSelections.EmptyDetections = false;
+                    // Either a Detection ((excluding All and Empty)) or a Classification type 
                     this.DetectionSelections.AllDetections = false;
-
-                    // Find out if its a detection or a classification
+                    this.DetectionSelections.InterpretAllDetectionsAsEmpty = false;
                     string detectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
-                    // this.DetectionSelections.DetectionCategory = this.database.GetDetectionCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
 
-                    if (!string.IsNullOrEmpty(detectionCategory))
+                    if (String.IsNullOrWhiteSpace(detectionCategory))
                     {
-                        // The selected item is a detection
-                        this.DetectionSelections.DetectionCategory = detectionCategory;
-                        this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+                        // CLASSIFICATION
+                        this.DetectionSelections.RecognitionType = RecognitionType.Classification;
+                        this.DetectionSelections.ClassificationCategory = this.database.GetClassificationCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
+                        if (resetSlidersIfNeeded)
+                        {
+                            this.DetectionRangeSlider.LowerValue = this.DetectionSelections.CurrentClassificationThreshold;
+                        }
                     }
                     else
                     {
-                        // The selected item is a classification
-                        this.DetectionSelections.ClassificationCategory = this.database.GetClassificationCategoryFromLabel((string)this.DetectionCategoryComboBox.SelectedItem);
-                        this.DetectionSelections.RecognitionType = RecognitionType.Classification;
-                        this.DetectionRangeSlider.Minimum = Constant.DetectionValues.MinimumDetectionValue;
+                        // DETECTION
+                        this.DetectionSelections.RecognitionType = RecognitionType.Detection;
+                        this.DetectionSelections.DetectionCategory = detectionCategory;
+                        if (resetSlidersIfNeeded)
+                        {
+                            this.DetectionRangeSlider.LowerValue = this.DetectionSelections.CurrentDetectionThreshold;
+                        }
                     }
                 }
             }
+            this.ignoreSpinnerUpdates = false;
         }
 
         // Note that for either of these, we avoid a race condition where each tries to update the other by
@@ -1079,6 +1120,15 @@ namespace Timelapse.Dialog
             else
             {
                 this.dontUpdateRangeSlider = false;
+            }
+
+            if (this.DetectionSelections.RecognitionType == RecognitionType.Detection)
+            {
+                this.DetectionSelections.CurrentDetectionThreshold = (double)this.DetectionConfidenceSpinnerLower.Value;
+            }
+            else if (this.DetectionSelections.RecognitionType == RecognitionType.Classification)
+            {
+                this.DetectionSelections.CurrentDetectionThreshold = (double)this.DetectionConfidenceSpinnerLower.Value;
             }
             this.InitiateShowCountsOfMatchingFiles();
         }

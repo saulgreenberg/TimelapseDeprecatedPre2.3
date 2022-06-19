@@ -330,6 +330,12 @@ namespace Timelapse
             {
                 // Only reset these if we actually imported some detections, as otherwise nothing has changed.
                 GlobalReferences.DetectionsExists = this.State.UseDetections && this.DataHandler.FileDatabase.DetectionsExists();
+                if (this.DataHandler?.FileDatabase?.CustomSelection?.DetectionSelections != null)
+                {
+                    this.DataHandler.FileDatabase.CustomSelection.DetectionSelections.CurrentDetectionThreshold = -1; // this forces it to use the default in the new JSON
+                }
+                // Reset the BoundingBox threshold to its new values.
+                this.State.BoundingBoxDisplayThresholdResetToDefault();
                 await this.FilesSelectAndShowAsync().ConfigureAwait(true);
             }
 

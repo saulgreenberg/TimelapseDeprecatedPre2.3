@@ -288,7 +288,7 @@ namespace Timelapse.Database
             // Form: WHERE or AND/OR
             // Add Where if we are using the first form, otherwise AND
             bool addAndOr = false;
-            if (string.IsNullOrEmpty(where) && this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
+            if (string.IsNullOrEmpty(where) && this.DetectionSelections.AllDetections == false && this.DetectionSelections.InterpretAllDetectionsAsEmpty == false)
             {
                 where += Sql.Where;
             }
@@ -302,7 +302,7 @@ namespace Timelapse.Database
             //   If its a detection:  Detections.category = <DetectionCategory>  
             //   If its a classification:  Classifications.category = <DetectionCategory>  
             // Only added if we are using a detection category (i.e., any category but All Detections)
-            if (this.DetectionSelections.AllDetections == false && this.DetectionSelections.EmptyDetections == false)
+            if (this.DetectionSelections.AllDetections == false && this.DetectionSelections.InterpretAllDetectionsAsEmpty == false)
             {
                 if (addAndOr)
                 {

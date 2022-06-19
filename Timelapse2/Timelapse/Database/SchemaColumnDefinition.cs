@@ -26,6 +26,11 @@ namespace Timelapse.Database
         {
         }
 
+        // Float default converted to string 
+        public SchemaColumnDefinition(string name, string type, float defaultValue) : this(name, type, defaultValue.ToString())
+        {
+        }
+
         // Full form
         public SchemaColumnDefinition(string name, string type, string defaultValue)
         {

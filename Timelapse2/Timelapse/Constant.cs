@@ -234,6 +234,7 @@ namespace Timelapse.Constant
         public const string SortTerms = "SortTerms";                     // a comma-separated list that indicates the Primary 1st and 2nd sort terms and their attribute
         public const string QuickPasteXML = "QuickPasteXML";              // an XML description that specifies the user's quickpaste entries and values.
         public const string SelectedFolder = "SelectedFolder";              // a string identifying the folder selected by a user via the Select|Folders menu. Otherwise empty if another selection was done, or if its all files
+        public const string BoundingBoxDisplayThreshold = "BBDisplayThreshold";
 
         // other columns found in Old XML files
         public const string Data = "Data";                 // the data describing the attributes of that control
@@ -461,7 +462,7 @@ namespace Timelapse.Constant
         public const int MarkerStrokeThickness = 2;
 
         public const string BoundingBoxCanvasTag = "BoundingBoxCanvas";
-        public const double BoundingBoxDisplayThresholdDefault = 0.5;
+
 
         // Threshold for a double click duration and for differentiating between marking and panning
         public static readonly TimeSpan DoubleClickTimeThreshold = TimeSpan.FromMilliseconds(250.0);
@@ -625,7 +626,7 @@ namespace Timelapse.Constant
         public const string DateTimeDatabaseFormat = "yyyy-MM-dd HH:mm:ss";
         public static readonly string[] DateTimeDatabaseFormats = { Constant.Time.DateTimeDatabaseFormat, Constant.Time.DateTimeDatabaseLegacyUTCFormat };
 
-        public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss"; 
+        public const string DateTimeDisplayFormat = "dd-MMM-yyyy HH:mm:ss";
         public const string DateTimeCSVWithTSeparator = "yyyy-MM-dd'T'HH:mm:ss";
         public const string DateTimeCSVWithoutTSeparator = "yyyy-MM-dd' 'HH:mm:ss";
 
@@ -704,9 +705,13 @@ namespace Timelapse.Constant
     {
         public const string InfoID = "infoID";
         public const string Detector = "detector";
+        public const string DetectorVersion = "megadetector_version";
         public const string DetectionCompletionTime = "detection_completion_time";
         public const string Classifier = "classifier";
         public const string ClassificationCompletionTime = "classification_completion_time";
+        public const string TypicalDetectionThreshold = "typical_detection_threshold";
+        public const string ConservativeDetectionThreshold = "conservative_detection_threshold";
+        public const string TypicalClassificationThreshold = "typical_classification_threshold";
     }
 
     public static class DetectionCategoriesColumns
@@ -735,8 +740,22 @@ namespace Timelapse.Constant
         public const string NoDetectionCategory = "0";
         public const string NoDetectionLabel = "Empty";
         public const string AllDetectionLabel = "All";
-        public const float MinimumDetectionValue = 0.1F;
-        public const float MinimumRecognitionValue = 0.2F;
+
+        // When a person selects an entity, we want the minimum lower boundt o be a titch above 0,
+        // as otherwise including '0' would also include all images with no detections. This way,
+        // an image must have at least one detection.
+        public const float MinimumDetectionValue = 0.00001F;
+        public const float MinimumRecognitionValue = 0.00001F;
+
+        // Detector defaults. Different versions of Megadetector produce different confidence values.
+        // The values below reflect  Megadetector v4, which is the likely detector if no overrides 
+        // were set  in the Detection json file
+        public const float DefaultTypicalDetectionThresholdIfUnknown = 0.8f;        // Appropriate for Megadetector v4
+        public const float DefaultConservativeDetectionThresholdIfUnknown = 0.3f;   // Appropriate for Megadetector v4
+        public const float DefaultTypicalClassificationThresholdIfUnknown = 0.75f;  // Appropriate for Megadetector v4
+        public const float BoundingBoxDisplayThresholdDefault = Constant.DetectionValues.Undefined;   // Appropriate for Megadetector v4
+        public const string MDVersionUnknown = "vUnknown";
+        public const float Undefined = -1F;
     }
 
     public static class ClassificationColumns

@@ -29,7 +29,6 @@ namespace Timelapse.Detection
         #region Constructor 
         public Detector()
         {
-            this.info = new info();
             this.images = new List<image>();
         }
 
@@ -80,15 +79,24 @@ namespace Timelapse.Detection
 
     /// <summary>
     /// The Info class holds extra information produced by Microsoft's Megadetector
-    /// None of this is really needed, but since its part of the standard I read it in.
     /// </summary>    
     public class info
     {
+        //public info()
+        //{
+        //    this.detector_metadata = new detector_metadata();
+        //    this.classifier_metadata = new classifier_metadata();
+        //}
         #region Public Properties
+        // The detector is a string that should include the detector filename, which will likely include
+        // the detector verision in the form md_v*
+        // for example the file name md_v4.1.0.pb says it used the megadetector version 5
         public string detector { get; set; }
         public string detection_completion_time { get; set; }
         public string classifier { get; set; }
         public string classification_completion_time { get; set; }
+        public detector_metadata detector_metadata { get; set;}
+        public classifier_metadata classifier_metadata { get; set; }
         #endregion
 
         #region Constructor
@@ -107,6 +115,43 @@ namespace Timelapse.Detection
             this.classification_completion_time = "unknown";
         }
         #endregion
+    }
+
+    public class detector_metadata
+    {
+        // if its null, load it with some defaults
+        public detector_metadata()
+        {
+            megadetector_version = Constant.DetectionValues.MDVersionUnknown;
+            typical_detection_threshold = Constant.DetectionValues.DefaultTypicalDetectionThresholdIfUnknown;
+            conservative_detection_threshold = Constant.DetectionValues.DefaultConservativeDetectionThresholdIfUnknown;
+        }
+        // The megadetector_version is a string that provides detector version in the form md_v*
+        // for example md_v5 is megadetector version 5
+        public string megadetector_version { get; set; }
+
+        // typical_detection_threshold describes the typical bound of the maximum detection confidence
+        // that normally produces a mostly correct result. For example, if it is .8, then the 
+        // confidence range of .8 - 1 is a reasonable starting point for looking for mostly correct
+        // detections
+        public float? typical_detection_threshold { get; set; }
+        
+        // conservative_detection_threshold describes the lower bound of the maximum detection confidence
+        // where results below that are likely mis-detections. For example, if it is .4, then anything less
+        // than .4 is likely empty. Thus 'Empty' could be consider from 0 - .4
+        public float? conservative_detection_threshold { get; set; }
+    }
+
+    public class classifier_metadata
+    {
+        public classifier_metadata()
+        {
+            typical_classification_threshold = Constant.DetectionValues.DefaultTypicalClassificationThresholdIfUnknown; // CHECK THIS
+        }
+        // typical_classification_threshold describes the typical bound of the classification probability
+        // that normally produces a mostly correct result. For example, if it is .75, then the 
+        // a classification probability of .75 or higher is likely correct
+        public float? typical_classification_threshold { get; set; }
     }
 
     /// <summary>

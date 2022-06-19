@@ -18,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xceed.Wpf.AvalonDock", "..\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Xceed.Wpf.Toolkit", "..\wpftoolkit-4.0.2-Modifed\ExtendedWPFToolkitSolution\Src\Xceed.Wpf.Toolkit\Xceed.Wpf.Toolkit.csproj", "{72E591D6-8F83-4D8C-8F67-9C325E623234}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Timelapse-ViewOnly", "Timelapse-ViewOnly\Timelapse-ViewOnly.csproj", "{B098399F-48CD-4D27-BEDC-E9CAA8635162}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Timelapse-ViewOnly", "UtilityPrograms\Timelapse-ViewOnly\Timelapse-ViewOnly.csproj", "{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -68,14 +68,14 @@ Global
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|Any CPU.Build.0 = Release|Any CPU
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|x86.ActiveCfg = Release|Any CPU
 		{72E591D6-8F83-4D8C-8F67-9C325E623234}.Release|x86.Build.0 = Release|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|x86.ActiveCfg = Debug|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Debug|x86.Build.0 = Debug|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|x86.ActiveCfg = Release|Any CPU
-		{B098399F-48CD-4D27-BEDC-E9CAA8635162}.Release|x86.Build.0 = Release|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Debug|x86.Build.0 = Debug|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Release|Any CPU.Build.0 = Release|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Release|x86.ActiveCfg = Release|Any CPU
+		{13D154A2-52DF-49B1-98A3-DBDDE2DDCD99}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -99,10 +99,10 @@ namespace Timelapse.Database
         {
             // check for an existing database before instantiating the database as SQL wrapper instantiation creates the database file
             bool populateDatabase = !File.Exists(filePath);
-            
+
             FileDatabase fileDatabase = new FileDatabase(filePath);
             if (backupFileJustMade)
-            { 
+            {
                 // if a backup of the db was very recently made, we just update it in this version to avoid doubly creating a backup file
                 // a bit of a hack, but it works.
                 fileDatabase.mostRecentBackup = DateTime.Now;
@@ -127,6 +127,7 @@ namespace Timelapse.Database
             {
                 fileDatabase.MarkersLoadRowsFromDatabase();
             }
+
             fileDatabase.CustomSelection = new CustomSelection(fileDatabase.Controls, customSelectionTermCombiningOperator);
             fileDatabase.PopulateDataLabelMaps();
             return fileDatabase;
@@ -168,6 +169,7 @@ namespace Timelapse.Database
             schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.SortTerms, Sql.Text));        // A comma-separated list of 4 sort terms
             schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.SelectedFolder, Sql.Text));
             schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.QuickPasteXML, Sql.Text));        // A comma-separated list of 4 sort terms
+            schemaColumnDefinitions.Add(new SchemaColumnDefinition(Constant.DatabaseColumn.BoundingBoxDisplayThreshold, Sql.Real, Constant.DetectionValues.BoundingBoxDisplayThresholdDefault));        // A comma-separated list of 4 sort terms
 
             this.Database.CreateTable(Constant.DBTables.ImageSet, schemaColumnDefinitions);
 
@@ -423,7 +425,7 @@ namespace Timelapse.Database
                 {
                     // Create the special backups file
                     string criticalVersionNumberFileAddition = "pre-v" + criticalVersionNumber;
-                    
+
                     // the .ddb file
                     FileBackup.TryCreateBackup(Path.GetDirectoryName(this.FilePath), Path.GetFileName(this.FilePath), false, criticalVersionNumberFileAddition);
                     this.mostRecentBackup = DateTime.Now;
@@ -640,6 +642,30 @@ namespace Timelapse.Database
             {
                 this.Database.ChangeNullToEmptyString(Constant.DBTables.FileData, this.GetDataLabelsExceptIDInSpreadsheetOrder());
             }
+
+            // Update the ImageSet table to include the BoundingBoxThreshold Field, as of 2.2.5.2, if it doesn't have that column.
+            string firstVersionWithBoundingBoxDisplayThresholdUpgrade = "2.2.5.2";
+            if (VersionChecks.IsVersion1GreaterThanVersion2(firstVersionWithBoundingBoxDisplayThresholdUpgrade, imageSetVersionNumber)
+                && false == this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.BoundingBoxDisplayThreshold))
+            {
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.ImageSet, new SchemaColumnDefinition(Constant.DatabaseColumn.BoundingBoxDisplayThreshold, Sql.Real, Constant.DetectionValues.BoundingBoxDisplayThresholdDefault));
+            }
+
+            // Update the Detector Info table in the Detector, if it exists.
+            // As of the version below, new info fields in the MegaDetector json file now specify useful confidence values for detections and classifications,
+            // These should be reflected as new columns in the corresponding Info table. Default values are for Megadetector 4, as jsons afterwards should always include those fields.
+            // Note that we only check for existence of one of the columns, as these were all added at the same time. If one is there, then they are all there.
+            string firstVersionWithDetectorInfoUpgrade = "2.2.5.2";
+            if (VersionChecks.IsVersion1GreaterThanVersion2(firstVersionWithDetectorInfoUpgrade, imageSetVersionNumber)
+                && this.Database.TableExists(Constant.DBTables.Info)
+                && false == this.Database.SchemaIsColumnInTable(Constant.DBTables.Info, Constant.InfoColumns.DetectorVersion))
+            {
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.Info, new SchemaColumnDefinition(Constant.InfoColumns.DetectorVersion, Sql.StringType, Constant.DetectionValues.MDVersionUnknown));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.Info, new SchemaColumnDefinition(Constant.InfoColumns.TypicalDetectionThreshold, Sql.Real, Constant.DetectionValues.DefaultTypicalDetectionThresholdIfUnknown));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.Info, new SchemaColumnDefinition(Constant.InfoColumns.ConservativeDetectionThreshold, Sql.Real, Constant.DetectionValues.DefaultConservativeDetectionThresholdIfUnknown));
+                this.Database.SchemaAddColumnToEndOfTable(Constant.DBTables.Info, new SchemaColumnDefinition(Constant.InfoColumns.TypicalClassificationThreshold, Sql.Real, Constant.DetectionValues.DefaultTypicalClassificationThresholdIfUnknown));
+            }
+
 
             // Updates the UTCOffset format. The issue is that the offset could have been written in the form +3,00 instead of +3.00 (i.e. with a comma)
             // depending on the computer's culture. 
@@ -1110,7 +1136,7 @@ namespace Timelapse.Database
                             // File: the modified term creates a file path by concatonating relative path and file
                             term[i] = String.Format("{0}{1}{2}", Constant.DatabaseColumn.RelativePath, Sql.Comma, Constant.DatabaseColumn.File);
                         }
-                        else if (sortTerm[i].DataLabel != Constant.DatabaseColumn.ID  
+                        else if (sortTerm[i].DataLabel != Constant.DatabaseColumn.ID
                                  && false == this.CustomSelection?.SearchTerms?.Exists(x => x.DataLabel == sortTerm[i].DataLabel))
                         {
 
@@ -2357,6 +2383,27 @@ namespace Timelapse.Database
             versionNumber = this.ImageSet.VersionCompatability;
             return true;
         }
+
+        public bool TrySetBoundingBoxDisplayThreshold(float threshold)
+        {
+            if (false == this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.BoundingBoxDisplayThreshold))
+            {
+                return false;
+            }
+            this.Database.Update(Constant.DBTables.ImageSet, new ColumnTuple(Constant.DatabaseColumn.BoundingBoxDisplayThreshold, threshold));
+            return true;   
+        }
+
+        public bool TryGetBoundingBoxDisplayThreshold(out float threshold)
+        {
+            threshold = Constant.DetectionValues.Undefined;
+            if (false == this.Database.SchemaIsColumnInTable(Constant.DBTables.ImageSet, Constant.DatabaseColumn.BoundingBoxDisplayThreshold))
+            {
+                return false;
+            }
+            threshold = (float) this.Database.ScalarGetFloatValue(Constant.DBTables.ImageSet, Constant.DatabaseColumn.BoundingBoxDisplayThreshold);
+            return true;
+        }
         #endregion
 
         #region DETECTION - Populate the Database (with progress bar)
@@ -2460,7 +2507,62 @@ namespace Timelapse.Database
                             {
                                 JsonSerializer serializer = new JsonSerializer();
                                 Detector detector = serializer.Deserialize<Detector>(reader);
-                                    
+
+                                // Set the detector to the MD version based upon the contents of the read-in
+                                // value for it (which is just the detector's file name). That file name value gives a 
+                                // reasonable hint as to what detector is currently in use.
+                                if (detector.info.detector == null)
+                                {
+                                    // just to insert a reasonable value into this, just in case
+                                    detector.info.detector = Constant.DetectionValues.MDVersionUnknown;
+                                }
+
+                                if (detector.info.detector_metadata == null)
+                                {
+                                    // If its not set, this will fill it with reasonable default values,
+                                    // e.g., its likely MD4 with the MD4 defaults, as later versions of MD
+                                    // should fill this field in.
+                                    detector.info.detector_metadata = new detector_metadata();
+                                }
+                                else
+                                {
+                                    // check for null fields or empty fields in this structure, setting them to defaults if needed
+                                    if (String.IsNullOrWhiteSpace(detector.info.detector_metadata.megadetector_version))
+                                    {
+                                        detector.info.detector_metadata.megadetector_version = Constant.DetectionValues.MDVersionUnknown;
+                                    }
+                                    if (detector.info.detector_metadata.typical_detection_threshold == null)
+                                    {
+                                        detector.info.detector_metadata.typical_detection_threshold = Constant.DetectionValues.DefaultTypicalDetectionThresholdIfUnknown;
+                                    }
+                                    if (detector.info.detector_metadata.conservative_detection_threshold == null)
+                                    {
+                                        detector.info.detector_metadata.conservative_detection_threshold = Constant.DetectionValues.DefaultConservativeDetectionThresholdIfUnknown;
+                                    }
+                                }
+
+                                if (detector.info.classifier_metadata == null)
+                                {
+                                    detector.info.classifier_metadata = new classifier_metadata();
+                                }
+                                else
+                                {
+                                    if (detector.info.classifier_metadata.typical_classification_threshold == null)
+                                    {
+                                        // If its not set, this will fill it with reasonable default values,
+                                        // e.g., its likely MD4 with the MD4 defaults, as later versions of MD
+                                        // should fill this field in.
+                                    }
+                                }
+
+                                // At this point, the detection fields should all be filled in with reasonable values.
+                                //System.Diagnostics.Debug.Print("Detector: " + detector.info.detector);
+                                //System.Diagnostics.Debug.Print("megadetector_version: " + detector.info.detector_metadata.megadetector_version);
+                                //System.Diagnostics.Debug.Print("typical_detection_threshold: " + detector.info.detector_metadata.typical_detection_threshold);
+                                //System.Diagnostics.Debug.Print("conservative_detection_threshold: " + detector.info.detector_metadata.conservative_detection_threshold.ToString());
+                                //System.Diagnostics.Debug.Print("typical_classification_threshold: " + detector.info.classifier_metadata.typical_classification_threshold.ToString());
+                                //System.Diagnostics.Debug.Print("BoundingBoxDisplayDefault: " + detector.BoundingBoxDisplayDefault.ToString());
+
                                 // If detection population was previously done in this session, resetting these tables to null 
                                 // will force reading the new values into them
                                 this.detectionDataTable = null; // to force repopulating the data structure if it already exists.
@@ -2487,7 +2589,6 @@ namespace Timelapse.Database
                                 progress.Report(new ProgressBarArguments(0, "Updating database with detections. Please wait", false, true));
                                 Thread.Sleep(Constant.ThrottleValues.RenderingBackoffTime);  // Allows the UI thread to update every now and then
                                 DetectionDatabases.PopulateTables(detector, this, this.Database, String.Empty);
-
                                 // DetectionExists needs to be primed if it is to save its DetectionExists state
                                 this.DetectionsExists(true);
                             }
@@ -2628,7 +2729,69 @@ namespace Timelapse.Database
         {
             this.CreateDetectionCategoriesDictionaryIfNeeded();
             return this.detectionCategoriesDictionary.TryGetValue(category, out string value) ? value : String.Empty;
+        }
 
+        // Get the TypicalDetectionThreshold from the Detection Info table. 
+        // If we cannot, return the default value.
+        public float GetTypicalDetectionThreshold()
+        {
+            float? x = null;
+            try
+            {
+                if (this.Database.TableExists(Constant.DBTables.Info) && this.Database.SchemaIsColumnInTable(Constant.DBTables.Info, Constant.InfoColumns.TypicalDetectionThreshold))
+                {
+                    x = this.Database.ScalarGetFloatValue(Constant.DBTables.Info, Constant.InfoColumns.TypicalDetectionThreshold);
+                }
+                return (x == null)
+                    ? Constant.DetectionValues.DefaultTypicalDetectionThresholdIfUnknown
+                    : (float)x;
+            }
+            catch
+            {
+                return Constant.DetectionValues.DefaultTypicalDetectionThresholdIfUnknown;
+            }
+        }
+
+        // Get the GetTypicalClassificationThreshold from the Detection Info table. 
+        // If we cannot, return the default value
+        public float GetTypicalClassificationThreshold()
+        {
+            float? x = null;
+            try
+            {
+                if (this.Database.TableExists(Constant.DBTables.Info) && this.Database.SchemaIsColumnInTable(Constant.DBTables.Info, Constant.InfoColumns.TypicalClassificationThreshold))
+                {
+                    x = this.Database.ScalarGetFloatValue(Constant.DBTables.Info, Constant.InfoColumns.TypicalClassificationThreshold);
+                }
+                return (x == null)
+                    ? Constant.DetectionValues.DefaultTypicalClassificationThresholdIfUnknown
+                    : (float)x;
+            }
+            catch
+            {
+                return Constant.DetectionValues.DefaultTypicalClassificationThresholdIfUnknown;
+            }
+        }
+
+        // Get the ConservativeDetectionThreshold from the Detection Info table. 
+        // If we cannot, return the default value
+        public float GetConservativeDetectionThreshold()
+        {
+            float? x = null;
+            try
+            {
+                if (this.Database.TableExists(Constant.DBTables.Info) && this.Database.SchemaIsColumnInTable(Constant.DBTables.Info, Constant.InfoColumns.ConservativeDetectionThreshold))
+                {
+                    x = this.Database.ScalarGetFloatValue(Constant.DBTables.Info, Constant.InfoColumns.ConservativeDetectionThreshold);
+                }
+                return (x == null)
+                    ? Constant.DetectionValues.DefaultConservativeDetectionThresholdIfUnknown
+                    : (float)x;
+            }
+            catch
+            {
+                return Constant.DetectionValues.DefaultConservativeDetectionThresholdIfUnknown;
+            }
         }
 
         public void CreateDetectionCategoriesDictionaryIfNeeded()

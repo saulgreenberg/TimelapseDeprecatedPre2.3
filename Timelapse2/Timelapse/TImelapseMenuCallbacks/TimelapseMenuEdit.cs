@@ -355,7 +355,7 @@ namespace Timelapse
                     // Check if is a deleted file. 
                     if (this.DataHandler.FileDatabase.IsFileRowInRange(nextFileIndex))
                     {
-                        System.Diagnostics.Debug.Print("-->" + this.DataHandler.FileDatabase.FileTable[nextFileIndex].ID.ToString());
+                        // System.Diagnostics.Debug.Print("-->" + this.DataHandler.FileDatabase.FileTable[nextFileIndex].ID.ToString());
                         if (false == filesToDelete.Any(file => file.ID == this.DataHandler.FileDatabase.FileTable[nextFileIndex].ID))
                         {
                             // Its not a deleted file, so we have a valid next file to display!

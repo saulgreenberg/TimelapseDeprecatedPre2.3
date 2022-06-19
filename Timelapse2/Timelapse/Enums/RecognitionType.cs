@@ -4,6 +4,6 @@
     {
         Detection,
         Classification,
-        None
+        Empty
     }
 }

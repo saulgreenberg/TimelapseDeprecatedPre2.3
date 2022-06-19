@@ -498,6 +498,17 @@ namespace Timelapse.Database
         {
             return this.ScalarGetCountFromSelect(Sql.Select + Sql.Max + Sql.OpenParenthesis + intfield + Sql.CloseParenthesis + Sql.From + dataTable);
         }
+
+        // return a scalar float value, or null if things go wrong.
+        public float? ScalarGetFloatValue(string dataTable, string floatfield)
+        {
+            object obj = this.GetScalarFromSelect(Sql.Select + floatfield + Sql.From + dataTable);
+            if (obj == DBNull.Value)
+            {
+                return null;
+            }
+            return Convert.ToSingle(obj);
+        }
         #endregion
 
 
