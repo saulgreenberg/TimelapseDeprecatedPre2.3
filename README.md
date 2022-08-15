@@ -1,4 +1,6 @@
-# Timelapse2
+# Timelapse - Deprecated. See saulgreenberg/Timelapse for the lastes version
+
+This is an old version of the Timelapse software, pre version 2.3.0.0
 This repository contains the source code for and releases of [Timelapse 2](http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.HomePage), created by Saul Greenberg of the University of Calgary and Greenberg Consulting Inc, and revised with the help of others.
 
 Timelapse2 is an Image Analyser for Camera Traps, where it is used by scientists, researchers, resource managers, educators and students to visually analyze and encode data from thousands of images and videos. See the [Timelapse web site](http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?) for packaged downloads, tutorial guides oriented towards end-users, samples to play with and other resources.
