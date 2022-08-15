@@ -1,4 +1,4 @@
-# Timelapse - Deprecated. See saulgreenberg/Timelapse for the lastes version
+# Timelapse - Deprecated. See saulgreenberg/Timelapse for the latest version
 
 This is an old version of the Timelapse software, pre version 2.3.0.0
 This repository contains the source code for and releases of [Timelapse 2](http://saul.cpsc.ucalgary.ca/timelapse/pmwiki.php?n=Main.HomePage), created by Saul Greenberg of the University of Calgary and Greenberg Consulting Inc, and revised with the help of others.
